@@ -1,0 +1,26 @@
+# 模型权重（约 2 GB，不入库）
+checkpoints/
+*.pt
+*.pth
+
+# 上游克隆（含嵌套 .git，不入库；恢复信息见 docs/项目进度.md）
+third_party/LanPaintBench/
+
+# 数据与缓存
+cache/
+data/_cache/
+data/samples/original/
+results/raw/*/images/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+
+# 本地缓存与编辑器
+.cache/
+.vscode/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,11 @@
+sample_id,original_image_id,split,mask_type,target_area,actual_area,seed,image_path,mask_path,sha256
+s0000,img0000,check,center,0.3000,0.299072,42,data/samples/original/img0000.png,data/masks/img0000_center30_mask.png,3c7dc1ad1cee688eeb24e69478f8a454b89d5ad4c4dc2d25a3f0b3ac2c78e192
+s0001,img0001,check,center,0.3000,0.299072,42,data/samples/original/img0001.png,data/masks/img0001_center30_mask.png,0780659ff1b156d7861571ac16564084ca5f7df49930073180e886253433c942
+s0002,img0002,check,center,0.3000,0.299072,42,data/samples/original/img0002.png,data/masks/img0002_center30_mask.png,5c1fcb08549b0fee074433936a0a8dd62e99a6e1986a81319bdb3cdd72636431
+s0003,img0003,check,center,0.3000,0.299072,42,data/samples/original/img0003.png,data/masks/img0003_center30_mask.png,8376c8774e185d2b24b53f5ee0d06c28dda21d57059f7d574e5682922f656f41
+s0004,img0004,check,center,0.3000,0.299072,42,data/samples/original/img0004.png,data/masks/img0004_center30_mask.png,53ce4dce8ebbcd3657017e0d116f7cea0e314981a804d182986d28ef070821e7
+s0005,img0005,check,center,0.3000,0.299072,42,data/samples/original/img0005.png,data/masks/img0005_center30_mask.png,21a81cd1a27c4941e4ff7cc5f0b6750ad0ce111a8ad4174739a4e192ba4a77fb
+s0006,img0006,check,center,0.3000,0.299072,42,data/samples/original/img0006.png,data/masks/img0006_center30_mask.png,1c1615a105a1076e01bc9a25a147a7341311ffd62504f6e5143cdeec88644159
+s0007,img0007,check,center,0.3000,0.299072,42,data/samples/original/img0007.png,data/masks/img0007_center30_mask.png,5ad551ad958fd80335c649ea7e4e7b3bc8aacb5f53713c09f21a5225b1f541a4
+s0008,img0008,check,center,0.3000,0.299072,42,data/samples/original/img0008.png,data/masks/img0008_center30_mask.png,cd911fc8df8094f33a3b6a4376c88e1c7deb1362851326dd8a870cc0cbbe9c82
+s0009,img0009,check,center,0.3000,0.299072,42,data/samples/original/img0009.png,data/masks/img0009_center30_mask.png,c133813e90ad7e3829df17b8e7ed35b262850a5375b6208ef5756bc0e29f0683

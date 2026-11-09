@@ -1,0 +1,4 @@
+# Shared with D:\Study\Postgraduate\GPT\envs\mnist.
+# The Windows CUDA wheels are available in D:\Study\Postgraduate\GPT\envs\.wheels.
+torch==2.11.0+cu128
+torchvision==0.26.0+cu128

@@ -1,0 +1,21 @@
+{
+  "runs": 10,
+  "ok_runs": 10,
+  "nfe_per_run": 120,
+  "nfe_total": 1200,
+  "nan_or_inf": false,
+  "blank": false,
+  "peak_vram_mb": 2730.0,
+  "median_seconds": 34.763,
+  "mean_seconds": 35.0208,
+  "estimated_gpu_hours_495": 4.78,
+  "config": {
+    "n_steps": 5,
+    "outer_steps": 20,
+    "seed": 42,
+    "precision": "fp32",
+    "sample": "img0009.png",
+    "mask": "img0009_center30_mask.png"
+  },
+  "notes": "generated_at=2026-11-09 23:51:57"
+}

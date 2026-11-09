@@ -1,0 +1,24 @@
+# LanPaint direct dependencies.
+# torch and torchvision are inherited from the shared mnist environment.
+# Shared fallback: torch==2.11.0+cu128, torchvision==0.26.0+cu128
+
+diffusers==0.34.0
+datasets==4.0.0
+lpips==0.1.4
+matplotlib==3.10.5
+numpy==2.3.2
+Pillow==11.3.0
+torchmetrics==1.8.0
+tqdm==4.67.1
+blobfile==3.0.0
+accelerate==1.15.0
+huggingface_hub==0.36.2
+safetensors==0.8.0
+transformers==4.57.6
+scipy==1.18.1
+scikit-image==0.26.0
+pandas==2.3.3
+PyYAML==6.0.3
+gradio==5.50.0
+pytest==9.2.0
+ruff==0.17.4
