@@ -3,7 +3,7 @@ checkpoints/
 *.pt
 *.pth
 
-# 上游克隆（含嵌套 .git，不入库；恢复信息见 docs/项目进度.md）
+# 上游克隆（含嵌套 .git，不入库；恢复信息见 docs/上游溯源.md）
 third_party/LanPaintBench/
 
 # 数据与缓存
