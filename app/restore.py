@@ -4,6 +4,8 @@
 - 不导入上游 ``run.py``（其在模块级执行 argparse 与相对路径加载），只引入所需模块。
 - 复用上游 ``ULDCharaPipeline_Sampler``（LanPaint-K 管线）与 ``same_seeds``。
 - 上游掩码极性为 1 = 保留，调用前用 ``mask_to_upstream`` 取反。
+- 模型按 (权重, 设备) 只加载一次，低/中/高三档 K 共用同一 UNet，只有管线按 K 复制；
+  否则每档各存一份约 2.2 GB 的模型，8 GB 显存会被三档撑爆。
 - NFE 通过包裹 ``unet.forward`` 实测计数（上游每次内层迭代会多次前向）。
 """
 
@@ -24,6 +26,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 UPSTREAM_DIR = PROJECT_ROOT / "third_party" / "LanPaintBench"
 DEFAULT_CHECKPOINT = PROJECT_ROOT / "checkpoints" / "256x256_diffusion_uncond.pt"
 
+_MODEL_CACHE: dict = {}
 _PIPELINE_CACHE: dict = {}
 
 
@@ -68,18 +71,16 @@ def _ensure_upstream_on_path() -> None:
         sys.path.insert(0, path)
 
 
-def _build_pipeline(config: RestoreConfig, device: torch.device):
-    """构建并缓存 (pipeline, counter, same_seeds)；模型权重从 config.checkpoint 加载。"""
+def _build_model(config: RestoreConfig, device: torch.device):
+    """构建并缓存 (unet, counter, same_seeds)；模型权重从 config.checkpoint 加载。
+
+    模型与内层预算 K 无关：同一权重只加载一次，低/中/高三档共用同一个 UNet。
+    """
     _ensure_upstream_on_path()
-    from diffusers import (
-        DDPMScheduler,
-        DPMSolverMultistepScheduler,
-        EulerDiscreteScheduler,
-        UNet2DModel,
-    )
+    from diffusers import DDPMScheduler, DPMSolverMultistepScheduler, UNet2DModel
     from diffusers.models.unets.unet_2d import UNet2DOutput
     from guided_diffusion.unet import UNetModel
-    from pipeline_lib_imagenet import ULDCharaPipeline_Sampler, same_seeds
+    from pipeline_lib_imagenet import same_seeds
 
     checkpoint = Path(config.checkpoint)
     if not checkpoint.is_file():
@@ -116,7 +117,6 @@ def _build_pipeline(config: RestoreConfig, device: torch.device):
         beta_schedule="linear",
     )
     dpm_scheduler = DPMSolverMultistepScheduler.from_config(noise_scheduler.config)
-    euler_scheduler = EulerDiscreteScheduler.from_config(noise_scheduler.config)
 
     class _ScoreNet(UNet2DModel):
         """与上游 run.py 中 score_net 等价的包装：取前 3 通道作为 eps。"""
@@ -155,7 +155,32 @@ def _build_pipeline(config: RestoreConfig, device: torch.device):
 
     unet.cal_eps = types.MethodType(cal_eps, unet)
 
-    pipeline = ULDCharaPipeline_Sampler(
+    counter = _ForwardCounter()
+    original_forward = unet.forward
+
+    def counted_forward(self, x, timestep, *args, **kwargs):
+        counter.value += 1
+        return original_forward(x, timestep, *args, **kwargs)
+
+    unet.forward = types.MethodType(counted_forward, unet)
+    return unet, counter, same_seeds
+
+
+def _build_pipeline(config: RestoreConfig, device: torch.device, unet):
+    """按 K 与采样参数构建管线；复用已缓存的 ``unet``，不重复加载模型权重。"""
+    _ensure_upstream_on_path()
+    from diffusers import DDPMScheduler, EulerDiscreteScheduler
+    from pipeline_lib_imagenet import ULDCharaPipeline_Sampler
+
+    noise_scheduler = DDPMScheduler(
+        beta_start=0.0001,
+        beta_end=0.02,
+        num_train_timesteps=1000,
+        beta_schedule="linear",
+    )
+    euler_scheduler = EulerDiscreteScheduler.from_config(noise_scheduler.config)
+
+    return ULDCharaPipeline_Sampler(
         unet=unet,
         scheduler=euler_scheduler,
         step_size=config.step_size,
@@ -167,18 +192,17 @@ def _build_pipeline(config: RestoreConfig, device: torch.device):
         chara_beta=config.chara_beta,
     ).to(device)
 
-    counter = _ForwardCounter()
-    original_forward = unet.forward
 
-    def counted_forward(self, x, timestep, *args, **kwargs):
-        counter.value += 1
-        return original_forward(x, timestep, *args, **kwargs)
-
-    unet.forward = types.MethodType(counted_forward, unet)
-    return pipeline, counter, same_seeds
+def _get_model(config: RestoreConfig, device: torch.device):
+    """按 (权重, 设备) 缓存模型；换 K 不会重新加载 2 GB 权重。"""
+    key = (str(Path(config.checkpoint)), str(device))
+    if key not in _MODEL_CACHE:
+        _MODEL_CACHE[key] = _build_model(config, device)
+    return _MODEL_CACHE[key]
 
 
 def _get_pipeline(config: RestoreConfig, device: torch.device):
+    """按 (K, 采样参数, 设备, 权重) 缓存管线，并复用同一份模型。"""
     key = (
         config.n_steps,
         config.step_size,
@@ -191,7 +215,8 @@ def _get_pipeline(config: RestoreConfig, device: torch.device):
         str(Path(config.checkpoint)),
     )
     if key not in _PIPELINE_CACHE:
-        _PIPELINE_CACHE[key] = _build_pipeline(config, device)
+        unet, counter, same_seeds = _get_model(config, device)
+        _PIPELINE_CACHE[key] = (_build_pipeline(config, device, unet), counter, same_seeds)
     return _PIPELINE_CACHE[key]
 
 

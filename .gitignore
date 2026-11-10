@@ -11,6 +11,7 @@ cache/
 data/_cache/
 data/samples/original/
 results/raw/*/images/
+results/ui/
 
 # Python
 __pycache__/

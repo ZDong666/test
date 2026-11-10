@@ -1,0 +1,20 @@
+# 开发集：10 图 × 3 掩码 × 2 面积 × 3 档 = 180 次（PRD §7.6）
+# 用途：观察预算收益、拟合特征归一化参数、冻结 M1/A1 权重与单图阈值（PRD §7.4）。
+experiment_id: dev_budget
+method: lanpaint
+policy: M1
+budget:
+  low: 2
+  middle: 5
+  high: 8
+outer_steps: 20
+batch_size: 1
+image_size: 256
+seed: 42
+precision: fp32
+data_manifest: data/manifest.csv
+checkpoint: checkpoints/256x256_diffusion_uncond.pt
+checkpoint_sha256: A37C32FFFD316CD494CF3F35B339936DEBDC1576DAD13FE57C42399A5DBC78B1
+output_dir: results/raw
+cache_dir: data/_cache/results
+enable_dynamic_stopping: false

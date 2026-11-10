@@ -1,0 +1,20 @@
+# 面积扩展：测试集第 21-25 图 × 3 掩码 × 15% 面积 × 3 档 = 45 次（PRD §7.6）
+# 运行命令见 scripts/run_experiment.py 顶部的 `--split test --image-offset 20 --image-limit 5 --target-area 0.15`。
+experiment_id: area_extension
+method: lanpaint
+policy: M1
+budget:
+  low: 2
+  middle: 5
+  high: 8
+outer_steps: 20
+batch_size: 1
+image_size: 256
+seed: 42
+precision: fp32
+data_manifest: data/manifest.csv
+checkpoint: checkpoints/256x256_diffusion_uncond.pt
+checkpoint_sha256: A37C32FFFD316CD494CF3F35B339936DEBDC1576DAD13FE57C42399A5DBC78B1
+output_dir: results/raw
+cache_dir: data/_cache/results
+enable_dynamic_stopping: false

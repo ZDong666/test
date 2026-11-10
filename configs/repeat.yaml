@@ -1,0 +1,20 @@
+# 重复实验：测试集第 26-30 图 × 3 掩码 × 30% 面积 × 3 档 × 新增种子 = 90 次（PRD §7.6 / §7.7）
+# 种子 2026 用本文件默认值；种子 3407 用 `--seed 3407` 覆盖（会写入实验目录的 config.yaml）。
+experiment_id: repeat_seed
+method: lanpaint
+policy: M1
+budget:
+  low: 2
+  middle: 5
+  high: 8
+outer_steps: 20
+batch_size: 1
+image_size: 256
+seed: 2026
+precision: fp32
+data_manifest: data/manifest.csv
+checkpoint: checkpoints/256x256_diffusion_uncond.pt
+checkpoint_sha256: A37C32FFFD316CD494CF3F35B339936DEBDC1576DAD13FE57C42399A5DBC78B1
+output_dir: results/raw
+cache_dir: data/_cache/results
+enable_dynamic_stopping: false

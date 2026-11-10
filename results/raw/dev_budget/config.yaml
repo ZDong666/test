@@ -1,0 +1,18 @@
+experiment_id: dev_budget
+method: lanpaint
+policy: M1
+budget:
+  low: 2
+  middle: 5
+  high: 8
+outer_steps: 20
+batch_size: 1
+image_size: 256
+seed: 42
+precision: fp32
+data_manifest: data/manifest.csv
+checkpoint: checkpoints/256x256_diffusion_uncond.pt
+checkpoint_sha256: a37c32fffd316cd494cf3f35b339936debdc1576dad13fe57c42399a5dbc78b1
+output_dir: results/raw
+cache_dir: data/_cache/results
+enable_dynamic_stopping: false

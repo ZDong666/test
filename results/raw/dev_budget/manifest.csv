@@ -1,0 +1,4 @@
+sample_id,original_image_id,split,mask_type,target_area,actual_area,boundary_norm,seed,image_path,mask_path,sha256
+img0010_center30,img0010,dev,center,0.3000,0.299072,3.971429,52,data/samples/original/img0010.png,data/masks/img0010_center30_mask.png,fb066a7079ecc5f21e6f6bcef04e9f7c769ae8295a23f58fc55144bb107a2098
+img0010_scratch30,img0010,dev,scratch,0.3000,0.300003,61.582815,52,data/samples/original/img0010.png,data/masks/img0010_scratch30_mask.png,fb066a7079ecc5f21e6f6bcef04e9f7c769ae8295a23f58fc55144bb107a2098
+img0010_scatter30,img0010,dev,scatter,0.3000,0.300003,37.498835,52,data/samples/original/img0010.png,data/masks/img0010_scatter30_mask.png,fb066a7079ecc5f21e6f6bcef04e9f7c769ae8295a23f58fc55144bb107a2098

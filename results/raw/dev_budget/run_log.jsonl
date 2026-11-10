@@ -1,0 +1,17 @@
+{"event": "start", "experiment_id": "dev_budget", "num_samples": 3, "num_images": 1, "split": "dev", "device": "cuda", "seed": 42, "precision": "fp32", "tiers": {"low": 2, "middle": 5, "high": 8}, "code_commit": "d9264a66f4cef44a96597888a9e43d045c6d71b0", "checkpoint_sha256": "a37c32fffd316cd494cf3f35b339936debdc1576dad13fe57c42399a5dbc78b1"}
+{"event": "tier", "sample_id": "img0010_center30", "level": "low", "k": 2, "nfe": 60, "elapsed_seconds": 23.7554, "peak_vram_mb": 2730.0, "cache_hit": true, "blank": false, "status": "ok"}
+{"event": "tier", "sample_id": "img0010_center30", "level": "middle", "k": 5, "nfe": 120, "elapsed_seconds": 45.1089, "peak_vram_mb": 4847.9, "cache_hit": true, "blank": false, "status": "ok"}
+{"event": "tier", "sample_id": "img0010_center30", "level": "high", "k": 8, "nfe": 180, "elapsed_seconds": 68.7295, "peak_vram_mb": 2730.0, "cache_hit": true, "blank": false, "status": "ok"}
+{"event": "tier", "sample_id": "img0010_scratch30", "level": "low", "k": 2, "nfe": 60, "elapsed_seconds": 27.138, "peak_vram_mb": 2730.0, "cache_hit": false, "blank": false, "status": "ok"}
+{"event": "tier", "sample_id": "img0010_scratch30", "level": "middle", "k": 5, "nfe": 120, "elapsed_seconds": 49.3003, "peak_vram_mb": 2730.7, "cache_hit": false, "blank": false, "status": "ok"}
+{"event": "tier", "sample_id": "img0010_scratch30", "level": "high", "k": 8, "nfe": 180, "elapsed_seconds": 75.3236, "peak_vram_mb": 2731.5, "cache_hit": false, "blank": false, "status": "ok"}
+{"event": "tier", "sample_id": "img0010_scatter30", "level": "low", "k": 2, "nfe": 60, "elapsed_seconds": 24.9375, "peak_vram_mb": 2731.5, "cache_hit": false, "blank": false, "status": "ok"}
+{"event": "tier", "sample_id": "img0010_scatter30", "level": "middle", "k": 5, "nfe": 120, "elapsed_seconds": 48.7889, "peak_vram_mb": 2731.5, "cache_hit": false, "blank": false, "status": "ok"}
+{"event": "tier", "sample_id": "img0010_scatter30", "level": "high", "k": 8, "nfe": 180, "elapsed_seconds": 75.317, "peak_vram_mb": 2731.5, "cache_hit": false, "blank": false, "status": "ok"}
+{"event": "policy", "policy": "B1", "num_samples": 3, "mean_k": 2.0, "nfe_total": 180}
+{"event": "policy", "policy": "B2", "num_samples": 3, "mean_k": 5.0, "nfe_total": 360}
+{"event": "policy", "policy": "B3", "num_samples": 3, "mean_k": 8.0, "nfe_total": 540}
+{"event": "policy", "policy": "M1", "num_samples": 3, "mean_k": 5.0, "nfe_total": 360}
+{"event": "policy", "policy": "A1", "num_samples": 3, "mean_k": 5.0, "nfe_total": 360}
+{"event": "policy", "policy": "C1", "num_samples": 3, "mean_k": 5.0, "nfe_total": 360}
+{"event": "end", "experiment_id": "dev_budget", "status": "ok", "num_images": 1, "num_samples": 3, "num_tier_runs": 9, "num_cache_hits": 3, "num_failures": 0, "num_records": 18, "policy_mean_k": {"A1": 5.0, "B1": 2.0, "B2": 5.0, "B3": 8.0, "C1": 5.0, "M1": 5.0}, "output_dir": "D:\\Study\\Postgraduate\\人工智能项目\\results\\raw\\dev_budget", "metrics_dir": "D:\\Study\\Postgraduate\\人工智能项目\\results\\metrics\\dev_budget"}
