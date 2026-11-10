@@ -1,4 +1,4 @@
-"""准备 S1 样本：取少量 ImageNet 256 图片并生成中心块掩码。
+"""准备样本：取 ImageNet 256 图片，生成三类掩码 × 两种面积的 50 图清单（S4 / FR-03）。
 
 数据来源（按优先级）：
 1. ``--parquet`` 指定的本地 parquet 分片；
@@ -6,8 +6,14 @@
 3. ``--local-dir`` 指定的本地图片目录；
 4. Hugging Face 流式下载（``datasets.load_dataset``，需要可用的 HF_ENDPOINT/代理）。
 
-图片保存到 data/samples/original，中心块掩码保存到 data/masks，
-最后写出 data/manifest.csv。
+图片保存到 data/samples/original，掩码保存到 data/masks，最后写出 data/manifest.csv。
+
+清单粒度为「原图 × 掩码类型 × 目标面积」（PRD §7.2 / §7.6）：
+50 张原图（检查集 10 + 开发集 10 + 正式测试集 30，划分只依赖原图，见 PRD §7.1）
+× 3 类掩码（center / scratch / scatter）× 2 种目标面积（15% / 30%）= 300 行。
+
+掩码种子逐图派生为 ``seed + 原图索引``，使同类型掩码在不同原图上形状不同；
+配合 :func:`app.masks.generate_mask` 内部的 (类型, 面积) 编码，同图不同掩码版本互不为子集。
 
 > 说明：本数据集的 parquet 为 Xet 存储，hf-mirror 的 resolve 会 302 到
 > ``cas-bridge.xethub.hf.co``，而 huggingface_hub 会拒绝该跳转（报
@@ -32,12 +38,26 @@ if str(PROJECT_ROOT) not in sys.path:
 from PIL import Image
 
 from app.data import MODEL_SIZE, align_image, sha256_file
-from app.masks import generate_mask, mask_area_ratio, save_mask_png
+from app.features import extract_features
+from app.masks import (
+    AREA_TARGETS,
+    AREA_TOLERANCE,
+    MASK_TYPES,
+    generate_mask,
+    mask_area_ratio,
+    save_mask_png,
+)
 
 HF_DATASET = "benjamin-paine/imagenet-1k-256x256"
 HF_DATA_FILES = {"test": "data/test-*.parquet"}
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".bmp", ".webp"}
 CACHE_DIR = PROJECT_ROOT / "data" / "_cache"
+
+#: 数据划分（PRD §7.1）：检查集 10 + 开发集 10 + 正式测试集 30 = 50 张原图
+CHECK_COUNT = 10
+DEV_COUNT = 10
+TEST_COUNT = 30
+TOTAL_COUNT = CHECK_COUNT + DEV_COUNT + TEST_COUNT
 
 MANIFEST_FIELDS = [
     "sample_id",
@@ -46,11 +66,21 @@ MANIFEST_FIELDS = [
     "mask_type",
     "target_area",
     "actual_area",
+    "boundary_norm",
     "seed",
     "image_path",
     "mask_path",
     "sha256",
 ]
+
+
+def _split_for(index: int) -> str:
+    """按原图索引划分；只依赖原图，保证同一原图的掩码版本不跨划分（PRD §7.1）。"""
+    if index < CHECK_COUNT:
+        return "check"
+    if index < CHECK_COUNT + DEV_COUNT:
+        return "dev"
+    return "test"
 
 
 def _iter_hf_images(count: int):
@@ -97,10 +127,11 @@ def _find_cached_parquet() -> Path | None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="准备 S1 样本图片与中心块掩码。")
-    parser.add_argument("--count", type=int, default=10, help="抓取图片数量。")
-    parser.add_argument("--target-area", type=float, default=0.30, help="目标缺失面积比例。")
-    parser.add_argument("--seed", type=int, default=42, help="掩码种子（center 不使用随机性）。")
+    parser = argparse.ArgumentParser(
+        description="准备样本：50 张图片 × 3 类掩码 × 2 种面积的清单。"
+    )
+    parser.add_argument("--count", type=int, default=TOTAL_COUNT, help="抓取图片数量（默认 50）。")
+    parser.add_argument("--seed", type=int, default=42, help="掩码基准种子；逐图派生为 seed + 索引。")
     parser.add_argument("--out", default="data", help="输出根目录（相对项目根）。")
     parser.add_argument("--local-dir", default=None, help="本地图片目录兜底（HF 不可用时）。")
     parser.add_argument("--parquet", default=None, help="本地 parquet 分片路径（优先于其它来源）。")
@@ -111,9 +142,6 @@ def main() -> int:
     mask_dir = out_root / "masks"
     image_dir.mkdir(parents=True, exist_ok=True)
     mask_dir.mkdir(parents=True, exist_ok=True)
-
-    mask_type = "center"
-    tag = f"{mask_type}{int(round(args.target_area * 100))}"
 
     parquet_path = Path(args.parquet) if args.parquet else _find_cached_parquet()
     if parquet_path is not None:
@@ -130,35 +158,47 @@ def main() -> int:
     for index, image in source:
         name = f"img{index:04d}"
         image_path = image_dir / f"{name}.png"
-        mask_path = mask_dir / f"{name}_{tag}_mask.png"
-
         align_image(image, MODEL_SIZE).save(image_path)
+        image_sha = sha256_file(image_path)
+        split = _split_for(index)
+        mask_seed = args.seed + index
 
-        mask = generate_mask(mask_type, size=MODEL_SIZE, target_area=args.target_area, seed=args.seed)
-        save_mask_png(mask_path, mask)
+        for mask_type in MASK_TYPES:
+            for target_area in AREA_TARGETS:
+                tag = f"{mask_type}{round(target_area * 100)}"
+                mask_path = mask_dir / f"{name}_{tag}_mask.png"
+                mask = generate_mask(
+                    mask_type, size=MODEL_SIZE, target_area=target_area, seed=mask_seed
+                )
+                save_mask_png(mask_path, mask)
 
-        actual_area = mask_area_ratio(mask)
-        if abs(actual_area - args.target_area) > 0.02:
-            print(
-                f"[warn] {name} 实际面积 {actual_area:.4f} 与目标 {args.target_area:.4f} 偏差超过 2pp",
-                flush=True,
-            )
+                actual_area = mask_area_ratio(mask)
+                if abs(actual_area - target_area) > AREA_TOLERANCE:
+                    print(
+                        f"[warn] {name} {tag} 实际面积 {actual_area:.4f} "
+                        f"与目标 {target_area:.4f} 偏差超过 {AREA_TOLERANCE:.0%}",
+                        flush=True,
+                    )
 
-        rows.append(
-            {
-                "sample_id": f"s{index:04d}",
-                "original_image_id": name,
-                "split": "check",
-                "mask_type": mask_type,
-                "target_area": f"{args.target_area:.4f}",
-                "actual_area": f"{actual_area:.6f}",
-                "seed": args.seed,
-                "image_path": image_path.relative_to(PROJECT_ROOT).as_posix(),
-                "mask_path": mask_path.relative_to(PROJECT_ROOT).as_posix(),
-                "sha256": sha256_file(image_path),
-            }
+                rows.append(
+                    {
+                        "sample_id": f"{name}_{tag}",
+                        "original_image_id": name,
+                        "split": split,
+                        "mask_type": mask_type,
+                        "target_area": f"{target_area:.4f}",
+                        "actual_area": f"{actual_area:.6f}",
+                        "boundary_norm": f"{extract_features(None, mask).boundary_norm:.6f}",
+                        "seed": mask_seed,
+                        "image_path": image_path.relative_to(PROJECT_ROOT).as_posix(),
+                        "mask_path": mask_path.relative_to(PROJECT_ROOT).as_posix(),
+                        "sha256": image_sha,
+                    }
+                )
+        print(
+            f"[ok] {name} split={split} 掩码 {len(MASK_TYPES) * len(AREA_TARGETS)} 个",
+            flush=True,
         )
-        print(f"[ok] {name}  actual_area={actual_area:.4f}", flush=True)
 
     manifest_path = out_root / "manifest.csv"
     with open(manifest_path, "w", newline="", encoding="utf-8") as handle:

@@ -1,0 +1,2 @@
+experiment_id,num_runs,num_ok,reference,mask,mean_masked_psnr,mean_full_lpips,mean_boundary_mae_3px
+s1_smoke,10,10,img0009.png,img0009_center30_mask.png,12.722582674748864,0.21756413578987122,0.11112940288469834
