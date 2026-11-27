@@ -9,7 +9,9 @@ Guidance for automated agents working in this repository. Human-facing instructi
   inference-budget study**. App code in `app/` (`data`, `masks`, `features`, `budget`, `restore`,
   `cache`, `config`, `metrics`, `experiment`, `policy_freeze`, `ui`); entry scripts in `scripts/`;
   experiment specs in `configs/*.yaml`; offline analysis in `analysis/`; CI in `ci/` and
-  `.github/workflows/cpu.yml`.
+  `.github/workflows/cpu.yml`. The web UI is **native H5 + FastAPI**: `app/ui.py` (routes `GET /`,
+  `POST /api/preview`, `POST /api/repair`, static `/runs`) serving `app/ui_static/{index.html,app.js,style.css}`;
+  Gradio is no longer used.
 - **S1–S6, the frozen rule, the full test scale and the write-up are done.** 540 real generations
   (dev 180 + main 270 + area 90 + seeds 2026/3407 90 each), 1080 policy records, 0 failures.
   Result: the adaptive rule M1 is **worse** than fixed K=5 on the 30-image test set
@@ -26,7 +28,7 @@ Guidance for automated agents working in this repository. Human-facing instructi
   archived results were produced in**, and the three `requirements-lanpaint-*.txt` lock files were
   removed from the repo — so `frozen_policy.json`'s `source_sha256` no longer matches the tree.
   Treat this as an open issue, not as a working configuration (see Open issues).
-- Offline checks need only CPU: `ci/requirements.txt` (torch CPU wheels + test deps).
+- Offline checks need only CPU: `ci/requirements.txt` (torch CPU wheels, fastapi/uvicorn/httpx, test deps).
 - Not vendored (gitignored): `checkpoints/256x256_diffusion_uncond.pt` and
   `third_party/LanPaintBench/`. Restore hash/commit from `docs/上游溯源.md` before touching
   inference. Never modify upstream and never import its `run.py`.
@@ -39,8 +41,8 @@ $py = 'D:\Study\Postgraduate\GPT\envs\lanpaint\Scripts\python.exe'
 & $py -m ruff check app scripts tests analysis ci                   # must stay clean
 & $py ci\run_cpu_tests.py                                           # offline CPU gate, blocks network
 & $py tools\check_lanpaint_env.py                                   # env/CUDA/ffmpeg audit
-.\start_ui.ps1                                                      # Gradio UI on 127.0.0.1:7860
-& $py scripts\check_ui.py                                           # end-to-end UI repair + download
+.\start_ui.ps1                                                      # H5 UI on 127.0.0.1:7860 (LANPAINT_PORT overrides)
+& $py scripts\check_ui.py                                           # real GPU check over the HTTP API
 & $py scripts\smoke_inference.py --runs 1                           # real inference, NFE/VRAM evidence
 & $py scripts\run_experiment.py --config configs\dev.yaml --split dev --freeze-development --warmup
 & $py analysis\diagnose_budget.py --cases-per-side 5                # needs local originals + run PNGs
@@ -70,8 +72,9 @@ Coverage (optional, kept out of the shared env): see `docs/覆盖率报告.md`.
 
 ## Gotchas
 
-- UI input: take the original from the editor background and the mask from layer alpha; empty mask ->
-  return original; all-missing mask rejected. GPU work is serialized; runs land in `results/ui/<ts>_<id>/`.
+- UI input (`app/ui_static/app.js` + `app.ui.prepare_input`): the H5 page keeps the untouched source
+  canvas and a separate mask canvas; empty mask -> return original; all-missing mask rejected. GPU work
+  is serialized; runs land in `results/ui/<ts>_<id>/` and are served read-only under `/runs/`.
 - `.gitignore` currently ignores `/results` and `/results/*`; existing evidence is tracked, but **new**
   files under `results/` will be silently untracked. Force-add (`git add -f`) anything that is evidence.
 - `results/raw/s1_smoke/report.json` currently holds a 1-run record, not the original 10-run D2 gate.

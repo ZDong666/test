@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LanPaint 图像修复</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/static/style.css?v=16">
+  <script src="/static/app.js?v=16" defer></script>
+</head>
+<body style="background: #eee">
+  <main class="shell workspace">
+    <section class="panel control-panel" aria-labelledby="inputTitle">
+      <div class="panel-head">
+        <div>
+          <h1 id="inputTitle">原始图像</h1>
+        </div>
+      </div>
+
+      <div class="panel-body">
+        <label class="upload-zone" id="uploadZone">
+          <input type="file" id="fileInput" accept="image/*" hidden>
+<!--          <span class="upload-mark" aria-hidden="true"></span>-->
+          <div class="upload-title">选择原图</div>
+          <span class="upload-hint" id="fileLabel"></span>
+        </label>
+        <div class="meta-line">
+          <span id="maskStatus">未标记区域</span>
+        </div>
+
+        <div class="field">
+          <span class="field-label">掩码来源</span>
+          <div class="mask-options">
+            <label class="radio-card"><input type="radio" name="maskMode" value="brush" checked><span>画笔涂抹</span></label>
+            <label class="radio-card"><input type="radio" name="maskMode" value="upload"><span>上传掩码</span></label>
+            <label class="size-control" for="brushSize">笔宽
+              <input type="range" id="brushSize" min="4" max="48" value="18">
+              <output id="brushSizeValue">18</output>
+            </label>
+            <button type="button" class="button quiet" id="clearMask">清空标记</button>
+          </div>
+        </div>
+
+        <div class="field" id="uploadMaskField" hidden>
+          <label class="field-label" for="maskFileInput">黑白掩码</label>
+          <input type="file" id="maskFileInput" accept="image/*">
+          <p class="field-note">白色 = 修复区域，黑色 = 保留区域。</p>
+        </div>
+
+        <div class="canvas-frame">
+          <div class="ruler" aria-hidden="true"></div>
+          <div class="canvas-stage" id="canvasStage">
+            <canvas id="sourceCanvas" width="256" height="256" aria-label="原图预览"></canvas>
+            <canvas id="maskCanvas" width="256" height="256" aria-label="修复区域标记" tabindex="0"></canvas>
+            <span class="corner corner-tl" aria-hidden="true"></span>
+            <span class="corner corner-tr" aria-hidden="true"></span>
+            <span class="corner corner-bl" aria-hidden="true"></span>
+            <span class="corner corner-br" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <div class="params">
+          <label for="budgetSelect">修复参数
+            <select id="budgetSelect">
+              <option value="2">K=2</option>
+              <option value="5" selected>K=5</option>
+              <option value="8">K=8</option>
+            </select>
+          </label>
+          <label for="seedInput">随机种子
+            <input type="number" id="seedInput" min="0" max="4294967295" step="1" value="42">
+          </label>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="button secondary" id="previewButton">预览修复区域</button>
+          <button type="button" class="button primary" id="repairButton">开始修复</button>
+        </div>
+
+        <div class="error-box" id="errorBox" role="alert" hidden></div>
+      </div>
+    </section>
+
+    <section class="panel result-panel" aria-labelledby="resultTitle">
+      <div class="panel-head">
+        <div>
+          <h2 id="resultTitle">修复结果</h2>
+        </div>
+      </div>
+
+      <div class="panel-body">
+        <div class="empty-state" id="emptyState">
+<!--          <div class="empty-frame" aria-hidden="true"><span></span><span></span></div>-->
+          <strong>无</strong>
+        </div>
+
+        <div class="result-view" id="resultView" hidden>
+          <figure class="result-figure">
+            <img id="resultImage" alt="修复结果">
+          </figure>
+
+          <div class="download-row">
+            <a class="button secondary" id="resultDownload" href="#" download="result.png">下载结果图</a>
+            <a class="button quiet" id="configDownload" href="#" download="config.json">下载配置</a>
+          </div>
+
+          <p class="status-line" id="statusText" aria-live="polite"></p>
+
+          <div class="thumb-row">
+            <figure>
+              <img id="previewImage" alt="遮挡输入预览">
+              <figcaption>遮挡输入</figcaption>
+            </figure>
+            <figure>
+            <figure>
+              <img id="maskPreviewImage" alt="实际修复区域">
+              <figcaption>实际修复区域</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

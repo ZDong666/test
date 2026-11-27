@@ -10,14 +10,14 @@
 .\start_ui.ps1
 ```
 
-或在安装了 `requirements-lanpaint-direct.txt` 依赖的 LanPaint 环境中执行 `python -m app.ui`。
+或在安装了 `requirements.yml` 依赖的 LanPaint 环境中执行 `python -m app.ui`。
 终端显示本地地址后，在浏览器中打开该地址（通常为 `http://127.0.0.1:7860`）。关闭服务可在终端按 Ctrl+C。
 
 需要已准备的 `third_party/LanPaintBench` 上游源码、`checkpoints/256x256_diffusion_uncond.pt` 权重与可用 NVIDIA GPU；恢复说明见 [上游溯源](docs/上游溯源.md)。
 
-上传图片后，用画笔涂抹待修复区域，或切换为上传黑白掩码（白色修复、黑色保留）。点击“预览修复区域”确认，再点击“开始修复”。默认 K=5，输出为 256×256。结果与配置可在页面下载，并保存至 `results/ui/`。
+网页端为原生 H5 + FastAPI，不再依赖 Gradio。上传图片后，用画笔涂抹待修复区域，或切换为上传黑白掩码（白色修复、黑色保留）。点击“预览修复区域”确认，再点击“开始修复”。默认 K=5，输出为 256×256。结果与配置可在页面下载，并保存至 `results/ui/`。
 
-GPU 请求串行排队；第一版尚不支持运行中取消或自适应预算。无掩码时返回原图，全缺失掩码会提示重新选择。上传图片不展示需要参考答案的质量指标。
+GPU 请求串行排队；尚不支持运行中取消或自适应预算。无掩码时返回原图，全缺失掩码会提示重新选择。上传图片不展示需要参考答案的质量指标。真实 GPU 校验入口仍为 `python scripts/check_ui.py`，改为通过本地 HTTP API 调用。
 
 完整操作步骤（界面、批量实验、评价、排错）见[使用说明](docs/使用说明.md)。
 
@@ -25,9 +25,9 @@ GPU 请求串行排队；第一版尚不支持运行中取消或自适应预算�
 
 ## 当前验证状态
 
-全量离线测试 **133 项通过**（`python -m pytest tests -q`），`ruff` 静态检查通过；离线 CPU 检查入口 `python ci/run_cpu_tests.py` 会屏蔽 CUDA、禁止联网，本机同样 133 项通过。GitHub Actions 的 CPU 工作流见 `.github/workflows/cpu.yml`（不下载模型、不跑扩散推理），已推送验证通过（[run 44033828251](https://github.com/ZDong666/test/actions/runs/44033828251)）。2026-11-17 另在仓库外新目录从远端克隆，按 `ci/requirements.txt` 重建环境，跑通全量测试、真实推理、一组实验与 Gradio 验证，见[复现记录](docs/复现记录.md)。
+全量离线测试通过（`python -m pytest tests -q`），`ruff` 静态检查通过；离线 CPU 检查入口 `python ci/run_cpu_tests.py` 会屏蔽 CUDA、禁止联网。GitHub Actions 的 CPU 工作流见 `.github/workflows/cpu.yml`（不下载模型、不跑扩散推理）。2026-11-17 另在仓库外新目录从远端克隆，按当时的 `ci/requirements.txt` 重建环境，跑通全量测试、真实推理、一组实验与界面验证，见[复现记录](docs/复现记录.md)。
 
-基础界面已通过一次真实 GPU API 修复与下载验证：K=5、NFE=120、采样约 40.05 秒、峰值显存约 2730 MB。2026-11-16 完整开发集与正式实验均已完成，冻结、输入哈希与等预算核验通过。
+早期 Gradio 基础界面已通过一次真实 GPU API 修复与下载验证：K=5、NFE=120、采样约 40.05 秒、峰值显存约 2730 MB。H5 + FastAPI 版本已完成 CPU 回归（133 passed）与真实 GPU HTTP 校验：`python scripts/check_ui.py` 于 2026-11-27 通过，K=5、NFE=120、30.93 秒、峰值 2730 MB、修复面积 29.91%，结果图与配置可经 `/runs/<run_id>/` 下载。2026-11-16 完整开发集与正式实验均已完成，冻结、输入哈希与等预算核验通过。
 
 完整开发集现有 **10 张原图、60 个掩码组合、180 条档位结果，0 失败**，六策略共 360 条记录。M1 在与 B2 相同总 NFE=7200 下，开发集 LPIPS 从 0.088518 降至 0.085453（降低 **3.46%**），但 PSNR 与边界 MAE 略差。
 
