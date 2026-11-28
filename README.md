@@ -10,12 +10,12 @@
 .\start_ui.ps1
 ```
 
-或在安装了 `requirements.yml` 依赖的 LanPaint 环境中执行 `python -m app.ui`。
+`start_ui.ps1` 使用本机固定 Python 路径；换电脑时，在准备好的环境中执行 `python -m app.ui`。环境选择和 CPU 页面验证步骤见[使用说明第 2 节](docs/使用说明.md)。当前 `requirements.yml` 不是历史实验的锁定环境，不应直接视为已验证的复现配置。
 终端显示本地地址后，在浏览器中打开该地址（通常为 `http://127.0.0.1:7860`）。关闭服务可在终端按 Ctrl+C。
 
-需要已准备的 `third_party/LanPaintBench` 上游源码、`checkpoints/256x256_diffusion_uncond.pt` 权重与可用 NVIDIA GPU；恢复说明见 [上游溯源](docs/上游溯源.md)。
+打开页面和生成区域预览不需要 GPU；非空区域的真实修复需要已准备的 `third_party/LanPaintBench` 上游源码、`checkpoints/256x256_diffusion_uncond.pt` 权重与可用 NVIDIA GPU。恢复说明见[上游溯源](docs/上游溯源.md)。
 
-网页端为原生 H5 + FastAPI，不再依赖 Gradio。上传图片后，用画笔涂抹待修复区域，或切换为上传黑白掩码（白色修复、黑色保留）。点击“预览修复区域”确认，再点击“开始修复”。默认 K=5，输出为 256×256。结果与配置可在页面下载，并保存至 `results/ui/`。
+网页端为原生 H5 + FastAPI，不再依赖 Gradio。上传图片后，用画笔涂抹待修复区域，可用橡皮、撤销和清空调整标记；也可上传黑白掩码（白色修复、黑色保留）。点击“预览修复区域”确认，再点击“开始修复”。默认 K=5，输出为 256×256。完成后可通过滑块对比遮挡输入与修复结果，下载结果与配置；产物同时保存至 `results/ui/`。
 
 GPU 请求串行排队；尚不支持运行中取消或自适应预算。无掩码时返回原图，全缺失掩码会提示重新选择。上传图片不展示需要参考答案的质量指标。真实 GPU 校验入口仍为 `python scripts/check_ui.py`，改为通过本地 HTTP API 调用。
 
