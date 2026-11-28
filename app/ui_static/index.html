@@ -1,125 +1,37 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>LanPaint 图像修复</title>
-  <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="/static/style.css?v=16">
-  <script src="/static/app.js?v=16" defer></script>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="color-scheme" content="light">
+<title>LanPaint · 图像修复工作台</title><link rel="icon" href="data:,">
+<link rel="stylesheet" href="/static/style.css?v=20261128"><script src="/static/app.js?v=20261128" defer></script>
 </head>
-<body style="background: #eee">
-  <main class="shell workspace">
-    <section class="panel control-panel" aria-labelledby="inputTitle">
-      <div class="panel-head">
-        <div>
-          <h1 id="inputTitle">原始图像</h1>
-        </div>
-      </div>
-
-      <div class="panel-body">
-        <label class="upload-zone" id="uploadZone">
-          <input type="file" id="fileInput" accept="image/*" hidden>
-<!--          <span class="upload-mark" aria-hidden="true"></span>-->
-          <div class="upload-title">选择原图</div>
-          <span class="upload-hint" id="fileLabel"></span>
-        </label>
-        <div class="meta-line">
-          <span id="maskStatus">未标记区域</span>
-        </div>
-
-        <div class="field">
-          <span class="field-label">掩码来源</span>
-          <div class="mask-options">
-            <label class="radio-card"><input type="radio" name="maskMode" value="brush" checked><span>画笔涂抹</span></label>
-            <label class="radio-card"><input type="radio" name="maskMode" value="upload"><span>上传掩码</span></label>
-            <label class="size-control" for="brushSize">笔宽
-              <input type="range" id="brushSize" min="4" max="48" value="18">
-              <output id="brushSizeValue">18</output>
-            </label>
-            <button type="button" class="button quiet" id="clearMask">清空标记</button>
-          </div>
-        </div>
-
-        <div class="field" id="uploadMaskField" hidden>
-          <label class="field-label" for="maskFileInput">黑白掩码</label>
-          <input type="file" id="maskFileInput" accept="image/*">
-          <p class="field-note">白色 = 修复区域，黑色 = 保留区域。</p>
-        </div>
-
-        <div class="canvas-frame">
-          <div class="ruler" aria-hidden="true"></div>
-          <div class="canvas-stage" id="canvasStage">
-            <canvas id="sourceCanvas" width="256" height="256" aria-label="原图预览"></canvas>
-            <canvas id="maskCanvas" width="256" height="256" aria-label="修复区域标记" tabindex="0"></canvas>
-            <span class="corner corner-tl" aria-hidden="true"></span>
-            <span class="corner corner-tr" aria-hidden="true"></span>
-            <span class="corner corner-bl" aria-hidden="true"></span>
-            <span class="corner corner-br" aria-hidden="true"></span>
-          </div>
-        </div>
-
-        <div class="params">
-          <label for="budgetSelect">修复参数
-            <select id="budgetSelect">
-              <option value="2">K=2</option>
-              <option value="5" selected>K=5</option>
-              <option value="8">K=8</option>
-            </select>
-          </label>
-          <label for="seedInput">随机种子
-            <input type="number" id="seedInput" min="0" max="4294967295" step="1" value="42">
-          </label>
-        </div>
-
-        <div class="actions">
-          <button type="button" class="button secondary" id="previewButton">预览修复区域</button>
-          <button type="button" class="button primary" id="repairButton">开始修复</button>
-        </div>
-
-        <div class="error-box" id="errorBox" role="alert" hidden></div>
-      </div>
-    </section>
-
-    <section class="panel result-panel" aria-labelledby="resultTitle">
-      <div class="panel-head">
-        <div>
-          <h2 id="resultTitle">修复结果</h2>
-        </div>
-      </div>
-
-      <div class="panel-body">
-        <div class="empty-state" id="emptyState">
-<!--          <div class="empty-frame" aria-hidden="true"><span></span><span></span></div>-->
-          <strong>无</strong>
-        </div>
-
-        <div class="result-view" id="resultView" hidden>
-          <figure class="result-figure">
-            <img id="resultImage" alt="修复结果">
-          </figure>
-
-          <div class="download-row">
-            <a class="button secondary" id="resultDownload" href="#" download="result.png">下载结果图</a>
-            <a class="button quiet" id="configDownload" href="#" download="config.json">下载配置</a>
-          </div>
-
-          <p class="status-line" id="statusText" aria-live="polite"></p>
-
-          <div class="thumb-row">
-            <figure>
-              <img id="previewImage" alt="遮挡输入预览">
-              <figcaption>遮挡输入</figcaption>
-            </figure>
-            <figure>
-            <figure>
-              <img id="maskPreviewImage" alt="实际修复区域">
-              <figcaption>实际修复区域</figcaption>
-            </figure>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-</body>
-</html>
+<body>
+<header class="topbar"><div class="shell topbar-inner"><a class="brand" href="/" aria-label="LanPaint 首页"><span class="brand-mark" aria-hidden="true">L<span>•</span></span>LanPaint<span class="brand-divider"></span><span class="brand-description">图像修复工作台</span></a><span class="version-label">256 × 256 · 单图修复</span></div></header>
+<main class="shell">
+<div class="intro"><div><p class="eyebrow">IMAGE INPAINTING</p><h1>让缺失的画面，重新完整。</h1><p class="intro-note">上传图片，标记需要修复的区域，交给 LanPaint 补全。</p></div><ol class="steps" aria-label="操作流程"><li><span>01</span>上传图片</li><li><span>02</span>标记区域</li><li><span>03</span>查看结果</li></ol></div>
+<div class="workspace" id="workspace" aria-busy="false">
+<section class="panel" aria-labelledby="inputTitle">
+<div class="panel-head"><h2 id="inputTitle"><span class="section-number">01</span>图像与修复区域</h2><span class="tag">输入</span></div>
+<div class="panel-body">
+<label class="upload-zone" id="uploadZone"><input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp,image/bmp" class="visually-hidden"><span class="upload-icon" aria-hidden="true">↑</span><span class="upload-copy"><strong id="uploadTitle">点击上传，或将图片拖到这里</strong><span id="fileLabel">PNG / JPG / WebP / BMP</span></span><span class="upload-action" aria-hidden="true">选择图片</span></label>
+<div class="editor-heading"><span class="field-label">修复区域</span><div class="segmented" aria-label="掩码来源"><label><input type="radio" name="maskMode" value="brush" checked><span>画笔涂抹</span></label><label><input type="radio" name="maskMode" value="upload"><span>上传掩码</span></label></div></div>
+<div class="toolbar" id="brushToolbar"><div class="tool-group" aria-label="画笔工具"><button type="button" class="tool-button" id="drawTool" aria-pressed="true">画笔</button><button type="button" class="tool-button" id="eraseTool" aria-pressed="false">橡皮</button></div><label class="size-control" for="brushSize">笔宽<input type="range" id="brushSize" min="4" max="48" value="18"><output id="brushSizeValue" for="brushSize">18</output></label><button type="button" class="text-button" id="undoMask">撤销</button><button type="button" class="text-button" id="clearMask">清空</button></div>
+<div class="mask-upload" id="uploadMaskField" hidden><label for="maskFileInput">选择黑白掩码</label><input type="file" id="maskFileInput" accept="image/png,image/jpeg,image/webp,image/bmp"><p class="field-note">白色 = 修复区域，黑色 = 保留区域。</p></div>
+<div class="canvas-frame"><div class="canvas-stage" id="canvasStage"><canvas id="sourceCanvas" width="256" height="256" aria-label="原图"></canvas><canvas id="maskCanvas" width="256" height="256" aria-label="修复区域画布，使用鼠标或触屏涂抹；也可上传黑白掩码" aria-describedby="canvasHint"></canvas><div class="canvas-placeholder" id="canvasPlaceholder"><svg width="46" height="46" viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect x="7" y="7" width="34" height="34" rx="8" stroke="currentColor" stroke-width="1.5"/><circle cx="18" cy="18" r="4" stroke="currentColor" stroke-width="1.5"/><path d="m8 34 11-10 8 7 6-6 8 9" stroke="currentColor" stroke-width="1.5"/></svg><strong>从一张图片开始</strong><span>上传后，在画面上涂抹修复区域</span></div></div></div>
+<div class="canvas-meta"><span id="maskStatus">尚未上传图片</span><span>256 × 256 px</span></div><p class="field-note" id="canvasHint"><span class="mask-dot" aria-hidden="true"></span>蓝色覆盖处将被修复，其他区域保留。</p>
+<div class="settings"><div class="settings-heading">修复设置<span>默认 K=5</span></div><div class="params"><label for="budgetSelect">推理预算<select id="budgetSelect"><option value="2">K=2 · 低预算</option><option value="5" selected>K=5 · 标准（默认）</option><option value="8">K=8 · 高预算</option></select></label><label for="seedInput">随机种子<input type="number" id="seedInput" min="0" max="4294967295" step="1" value="42" required></label></div><p class="field-note">图片将缩放至 256 × 256；更高预算不保证更好的修复效果。</p></div>
+<div class="actions"><button type="button" class="button secondary" id="previewButton" disabled>预览修复区域</button><button type="button" class="button primary" id="repairButton" disabled>开始修复 →</button></div><div class="error-box" id="errorBox" role="alert" hidden></div>
+</div></section>
+<section class="panel result-panel" aria-labelledby="resultTitle"><div class="panel-head"><h2 id="resultTitle"><span class="section-number">02</span>修复结果</h2><span class="tag" id="resultBadge">等待输入</span></div><div class="panel-body">
+<div class="status-line" id="statusText" role="status" aria-live="polite">准备好图片后，先预览区域，再开始修复。</div>
+<div class="empty-state" id="emptyState"><div class="empty-art" aria-hidden="true"><span></span><i>✦</i></div><h3>新的画面，即将呈现</h3><p>标记需要补全的部分，点击「开始修复」。<br>完成后可对比效果并下载图片。</p></div>
+<div id="resultView" hidden>
+<div class="result-controls" id="resultControls" hidden><div class="segmented" role="group" aria-label="结果视图"><button type="button" id="resultTab" aria-pressed="true">修复结果</button><button type="button" id="compareTab" aria-pressed="false">前后对比</button></div><span class="result-size">256 × 256</span></div>
+<figure class="result-figure" id="resultFigure" hidden><img id="resultImage" alt="修复后的图片"></figure>
+<div id="compareView" hidden><div class="comparison"><img id="compareAfter" alt="修复后的图片"><img id="compareBefore" class="compare-before" alt="修复前的遮挡输入"><span class="compare-label before-label">遮挡输入</span><span class="compare-label after-label">修复结果</span><div class="compare-divider" id="compareDivider" aria-hidden="true"><span>↔</span></div></div><label class="compare-slider" for="compareRange">拖动对比<input type="range" id="compareRange" min="0" max="100" value="50"><output id="compareValue" for="compareRange">50%</output></label></div>
+<dl class="metrics" id="metrics" hidden><div><dt>修复面积</dt><dd id="areaMetric">—</dd></div><div><dt>推理耗时</dt><dd id="timeMetric">—</dd></div><div><dt>实际 NFE</dt><dd id="nfeMetric">—</dd></div></dl>
+<div class="download-row" id="downloadRow" hidden><a class="button primary" id="resultDownload" download="result.png">下载结果图 ↓</a><a class="button secondary" id="configDownload" download="config.json">下载配置</a></div>
+<div class="preview-heading"><h3>区域预览</h3><span>黑色遮挡处为待修复区域</span></div><div class="thumb-row"><figure><img id="previewImage" alt="遮挡输入预览"><figcaption>遮挡输入</figcaption></figure><figure><img id="maskPreviewImage" alt="实际修复区域，白色为待修复区域"><figcaption>实际掩码 · 白色为修复区</figcaption></figure></div>
+</div></div></section>
+</div><footer class="footer"><span>LanPaint · 图像修复实验工作台</span><span>生成内容可能与真实画面不同，请结合原图判断。</span></footer>
+</main></body></html>
